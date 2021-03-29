@@ -16,7 +16,18 @@ class SirSocket {
     int sock;
     sockaddr_in server;
     string file_path;
-    void serialize_packet(Packet p, uint32_t data[64]);
+    sockaddr client_ip;
+    struct Packet {
+        uint32_t src_ip;
+        uint32_t dst_ip;
+        uint32_t seq_no;
+        __uint128_t checksum;
+        bool ack;
+        bool nak;
+        uint8_t length;
+        uint8_t data[35];
+    };
+    void serialize_packet(Packet p, uint8_t data[64]);
 
    public:
     /**
@@ -24,9 +35,9 @@ class SirSocket {
      */
     SirSocket();
     /**
-     * Parameterised constructor
+     * Parameterised constructo
      */
-    SirSocket(int sock_fd) : sock(sock_fd) {}
+    SirSocket(int sock_fd);
     /**
      * Void function to request file from server.
      */

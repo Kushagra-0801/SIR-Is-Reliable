@@ -36,8 +36,45 @@
             "type": "shell",
             "command": "mkdir",
             "args": [
+                "-p",
                 "target"
             ]
+        },
+        {
+            "label": "Scratch build",
+            "type": "shell",
+            "command": "g++",
+            "dependsOn": [
+                "Create target"
+            ],
+            "args": [
+                "-std=c++17",
+                "-Wall",
+                "-Wpedantic",
+                "-Wextra",
+                "bin/scratch.cpp",
+                "-o",
+                "target/scratch"
+            ],
+            "problemMatcher": "$gcc",
+            "group": "build",
+            "presentation": {
+                "focus": true,
+                "clear": true
+            }
+        },
+        {
+            "label": "Scratch run",
+            "type": "shell",
+            "command": "target/scratch",
+            "dependsOn": [
+                "Scratch build"
+            ],
+            "group": "test",
+            "presentation": {
+                "focus": true,
+                "clear": true
+            }
         }
     ]
 }

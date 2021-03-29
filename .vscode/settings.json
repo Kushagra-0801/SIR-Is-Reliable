@@ -5,6 +5,7 @@
         "socket": "cpp",
         "functional": "cpp",
         "system_error": "cpp",
-        "stdexcept": "cpp"
+        "stdexcept": "cpp",
+        "iostream": "cpp"
     }
 }
