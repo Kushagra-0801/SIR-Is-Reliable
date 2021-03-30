@@ -16,16 +16,13 @@ class SirSocket {
     int sock;
     sockaddr_in server;
     string file_path;
-    sockaddr client_ip;
     struct Packet {
-        uint32_t src_ip;
-        uint32_t dst_ip;
         uint32_t seq_no;
         __uint128_t checksum;
         bool ack;
         bool nak;
         uint8_t length;
-        uint8_t data[35];
+        uint8_t data[43];
     };
     void serialize_packet(Packet p, uint8_t data[64]);
 
