@@ -1,38 +1,25 @@
-
 // Client side C/C++ program to demonstrate Socket programming
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#define PORT 8080
 
-int main(int argc, char const *argv[]) {
-    int sock = 0, valread;
-    struct sockaddr_in serv_addr;
-    char *hello = "Hello from client";
-    char buffer[1024] = {0};
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+#include "sir.hpp"
+#define PORT 8080
+#include <iostream>
+
+using namespace std;
+
+int main() {
+    int sock = 0;
+    if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         printf("\n Socket creation error \n");
         return -1;
     }
-
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(PORT);
-
-    // Convert IPv4 and IPv6 addresses from text to binary form
-    if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0) {
-        printf("\nInvalid address/ Address not supported \n");
-        return -1;
-    }
-
-    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-        printf("\nConnection Failed \n");
-        return -1;
-    }
-    send(sock, hello, strlen(hello), 0);
-    printf("Hello message sent\n");
-    valread = read(sock, buffer, 1024);
-    printf("%s\n", buffer);
+    SirSocket s{sock};
+    cout << "Sent 0" << endl;
+    s.ask_for_file("127.0.0.1", 8000, "Shivang and Pant for Jai-Veeru MC");
+    cout << "Sent" << endl;
     return 0;
 }

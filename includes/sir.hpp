@@ -7,6 +7,16 @@
 #include <string>
 
 using namespace std;
+const size_t PACKET_SIZE = 64;
+
+struct Packet {
+    uint32_t seq_no;
+    __uint128_t checksum;
+    bool ack;
+    bool nak;
+    uint8_t length;
+    uint8_t data[43];
+};
 
 /**
  * Class to represent a particular socket.
@@ -16,17 +26,11 @@ class SirSocket {
     int sock;
     sockaddr_in server;
     string file_path;
-    struct Packet {
-        uint32_t seq_no;
-        __uint128_t checksum;
-        bool ack;
-        bool nak;
-        uint8_t length;
-        uint8_t data[43];
-    };
-    void serialize_packet(Packet p, uint8_t data[64]);
 
    public:
+    void serialize_packet(Packet p, uint8_t data[PACKET_SIZE]);
+    Packet deserialize_packet(const uint8_t data[PACKET_SIZE]);
+
     /**
      * Default Constructor
      */
