@@ -6,13 +6,12 @@
 
 const uint8_t DATA_PREFIX[2] = {0xFE, 0xFD};
 
-// SirSocket::SirSocket() {
-//     int sock = socket(AF_INET, SOCK_DGRAM, 0);
-//     if (sock < 0) {
-//         throw system_error({}, "Cannot create socket");
-//     }
-//     SirSocket(sock);
-// }
+SirSocket::SirSocket() {
+    sock = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sock < 0) {
+        throw system_error({}, "Cannot create socket");
+    }
+}
 
 SirSocket::SirSocket(int sock_fd) { sock = sock_fd; }
 

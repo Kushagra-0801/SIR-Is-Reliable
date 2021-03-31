@@ -8,5 +8,8 @@
         "stdexcept": "cpp",
         "iostream": "cpp",
         "ostream": "cpp"
-    }
+    },
+    "C_Cpp.default.includePath": [
+        "includes/*"
+    ]
 }

@@ -6,17 +6,9 @@
 #include <iostream>
 #include <string>
 
-using namespace std;
-const size_t PACKET_SIZE = 64;
+#include "packet.hpp"
 
-struct Packet {
-    uint32_t seq_no;
-    __uint128_t checksum;
-    bool ack;
-    bool nak;
-    uint8_t length;
-    uint8_t data[43];
-};
+using namespace std;
 
 /**
  * Class to represent a particular socket.
