@@ -1,5 +1,11 @@
 #include "sirServer.hpp"
 
+#include <chrono>
+#include <filesystem>
+#include <iostream>
+#include <thread>
+#include <utility>
+
 SirServer::SirServer(sockaddr_in server_address) {
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock < 0) {
@@ -12,26 +18,42 @@ SirServer::SirServer(sockaddr_in server_address) {
     }
 }
 
-void SirServer::startListening() {
-    uint8_t buf[64];
-    while (true) {
-        size_t len = 0;
-        ssize_t i;
-        sockaddr_in client;
-        socklen_t length;
-        // bytes_read = recv(sock, &buf, 64, 0);
-        while (true) {
-            i = recvfrom(sock, buf + len, 64 - len, 0, (sockaddr*)&client,
-                         &length);
+void SirServer::deal_with_client(Packet p, sockaddr_in client_addr) {
+    if (p.data[0] == DATA_PREFIX[0] && p.data[1] == DATA_PREFIX[1]) {
+        // TODO
+    } else {
+        string path{p.data, p.data + p.length};
+        Packet p;
+        if (filesystem::is_regular_file(path)) {
+            auto size = filesystem::file_size(path);
+
+        } else {
+            for (int i = 0; i < 8; i++) {
+                p.data[i] = 0xFF;
+            }
         }
-        // for (i = read(sock, buf + len, 64 - len); i > 0;
-        //      i = read(sock, buf + len, 64 - len)) {
-        //     len += i;
-        // }
+    }
+}
+
+void SirServer::startListening() {
+    uint8_t buf[PACKET_SIZE];
+    sockaddr_in client;
+    ssize_t i;
+    socklen_t length;
+    while (true) {
+        size_t len = -1;
+        i = 1;
+        while (i + len < 64 && i > 0) {
+            len += i;
+            i = recvfrom(sock, buf + len, PACKET_SIZE - len, 0,
+                         (sockaddr*)&client, &length);
+        }
         if (i < 0) {
             printf("Read error\n");
             exit(EXIT_FAILURE);
         } else {
+            Packet p = deserialize_packet(buf);
+            thread{deal_with_client, p, client}.join();
         }
     }
 }

@@ -20,9 +20,6 @@ class SirSocket {
     string file_path;
 
    public:
-    void serialize_packet(Packet p, uint8_t data[PACKET_SIZE]);
-    Packet deserialize_packet(const uint8_t data[PACKET_SIZE]);
-
     /**
      * Default Constructor
      */
