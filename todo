@@ -1,3 +1,33 @@
- - Packet Serialize
- - Packet Deserialize
- - Client side packet send
+✅ - green tick (apply on tasks done)
+
+Lib
+    - Socket Wrapper Class (Main API)
+        - Make buffers
+        - Receive packets
+        - Send packets
+        - Deal with partitioning the data (each packet 64 bytes)
+        - Deal with timeouts on replies
+        - Automatically resend on timeout
+        - This one should be very agnostic
+        - Packet send, reply receive, timeout handling
+        - fn send_ack(serial_number, addr, timeout = 0.5s, max_retries = 10)
+        - fn send_nak(serial_number, addr)
+    - Common Structs and Utils (Packet etc)
+        - Socket agnostic
+        - Packet struct and related constants and functions ✅
+        - Deal with serialization / deserialization ✅
+        - Deal with encoding and checksums ✅
+        - And utilities that are used across the code base should be put here
+
+Client
+    - The client binary
+        - Deal with the cli (command line arguments, environment variables, config files, whatever you want)
+        - Deal with user messages
+        - Deal with writing to the disk
+
+Server
+    - The server binary
+        - Deal with accepting connections
+        - Start thread for user (make a threadpool helper class)
+        - Reply correctly (for single packet / partial packet communications)
+    - Server Side Socket
