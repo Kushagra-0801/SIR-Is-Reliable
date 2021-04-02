@@ -2,7 +2,7 @@
 #define SIR_PACKET
 
 #include <arpa/inet.h>
-#include <stdint.h>
+#include <stddef.h>
 #include <sys/socket.h>
 
 using namespace std;
@@ -21,5 +21,7 @@ struct Packet {
 
 void serialize_packet(Packet p, uint8_t data[PACKET_SIZE]);
 Packet deserialize_packet(const uint8_t data[PACKET_SIZE]);
+
+void copy_bytes(uint8_t* buf, const uint8_t* src, size_t n);
 
 #endif

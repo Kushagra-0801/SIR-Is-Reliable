@@ -9,7 +9,7 @@ Lib
         - Deal with timeouts on replies
         - Automatically resend on timeout
         - This one should be very agnostic
-        - Packet send, reply receive, timeout handling
+        - Packet send, reply receive, timeout handling, window, selective repeat 
         - fn send_ack(serial_number, addr, timeout = 0.5s, max_retries = 10)
         - fn send_nak(serial_number, addr)
     - Common Structs and Utils (Packet etc)

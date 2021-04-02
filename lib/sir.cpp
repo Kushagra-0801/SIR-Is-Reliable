@@ -4,24 +4,9 @@
 
 #include <random>
 
-SirSocket::SirSocket() {
-    sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sock < 0) {
-        throw system_error({}, "Cannot create socket");
-    }
-}
-
-SirSocket::SirSocket(int sock_fd) { sock = sock_fd; }
-
-/**
- * Copy Byte
- * Copies src data into the buffer
- *
- */
-void copy_bytes(uint8_t* buf, const uint8_t* src, size_t n) {
-    for (size_t i = 0; i < n; i++) {
-        buf[i] = src[i];
-    }
+SirSocket::SirSocket(int sock_fd, size_t buffer_size) {
+    sock = sock_fd;
+    recv_buffer.reserve(buffer_size);
 }
 
 __uint128_t digest_to_u128(uint8_t* digest) {
@@ -34,13 +19,13 @@ __uint128_t digest_to_u128(uint8_t* digest) {
 }
 
 void SirSocket::ask_for_file(string server_addr, int16_t port, string path) {
-    if (inet_pton(AF_INET, server_addr.c_str(), &server.sin_addr) <= 0) {
+    if (inet_pton(AF_INET, server_addr.c_str(), &peer.sin_addr) <= 0) {
         throw invalid_argument("Invalid server address");
     };
-    server.sin_port = htons(port);
-    server.sin_family = AF_INET;
+    peer.sin_port = htons(port);
+    peer.sin_family = AF_INET;
     file_path = path;
-    if (connect(sock, (sockaddr*)&server, sizeof(server)) < 0) {
+    if (connect(sock, (sockaddr*)&peer, sizeof(peer)) < 0) {
         printf("\nConnection Failed \n");
         exit(EXIT_FAILURE);
     }
@@ -67,6 +52,20 @@ void SirSocket::ask_for_file(string server_addr, int16_t port, string path) {
             } else {
                 len += stat;
             }
+        }
+    }
+}
+
+void SirSocket::get_packet() {
+    uint8_t buf[PACKET_SIZE];
+    sockaddr_in addr;
+    socklen_t len;
+    int bytes;
+    while (1) {
+        bytes = recvfrom(sock, buf, PACKET_SIZE, 0, (sockaddr*)&addr, &len);
+        if (bytes > 0) {
+            buf[bytes] = 0;
+            printf("received message: \"%s\"\n", buf);
         }
     }
 }
