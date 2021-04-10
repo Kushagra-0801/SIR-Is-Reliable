@@ -39,7 +39,7 @@ class SirSocket:
     def _start_timer(self, seq_num):
         timer = Timer(self.TIMEOUT, self._handle_timeout, (seq_num, ))
         timer.start()
-        self.timers[self.send_seqnum] = timer
+        self.timers[seq_num] = timer
 
     def _handle_timeout(self, seq_num):
         if not self.is_running:
