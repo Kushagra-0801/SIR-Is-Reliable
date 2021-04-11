@@ -13,7 +13,8 @@ def grouper(iterable, n, fillvalue=None):
     # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"
     from itertools import zip_longest
     args = [iter(iterable)] * n
-    return (d for d in zip_longest(*args, fillvalue=fillvalue))
+    return (''.join(chr(i) for i in d if i is not None).encode()
+            for d in zip_longest(*args, fillvalue=fillvalue))
 
 
 class SirSocket:

@@ -30,7 +30,7 @@ if len(path := args.server_file_path) > DATA_SIZE:
         prev = p
     data += prev
 else:
-    data = path.encode('utf-8')
+    data = path.encode()
 socket.write(data)
 
 while not (file_size := socket.read()):
