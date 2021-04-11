@@ -1,5 +1,5 @@
-from src.packet import DATA_SIZE, CONTINUATION_PREFIX, SEQ_LIM
-from . import sirsocket
+from packet import DATA_SIZE, CONTINUATION_PREFIX, SEQ_LIM
+import sirsocket
 
 from random import randrange
 import argparse
@@ -17,7 +17,7 @@ parser.add_argument("client_file_path",
 args = parser.parse_args()
 
 socket = sirsocket.SirSocket()
-socket.connect(args.server)
+socket.connect((args.server, args.port))
 socket.next_seq = (start_no := randrange(0, SEQ_LIM))
 
 if len(path := args.server_file_path) > DATA_SIZE:
@@ -30,7 +30,7 @@ if len(path := args.server_file_path) > DATA_SIZE:
         prev = p
     data += prev
 else:
-    data = path
+    data = path.encode('utf-8')
 socket.write(data)
 
 while not (file_size := socket.read()):

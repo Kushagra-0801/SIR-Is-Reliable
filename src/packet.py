@@ -6,6 +6,7 @@ MAX_PACKET_SIZE: int = 64
 DATA_SIZE: int = 43
 CONTINUATION_PREFIX: bytes = b"\xFE\xFD"
 SEQ_LIM = 2**32
+FINISHER_DATA = b"TEKCAP TSAL"
 
 
 @dataclass
@@ -29,8 +30,8 @@ class Packet:
         buf += b'\0' * (64 - len(buf))
         return buf
 
-    @classmethod
-    def from_buf(cls, buf: bytes):
+    @staticmethod
+    def from_buf(buf: bytes):
         assert len(buf) == 64
         seq_no = int.from_bytes(buf[:4], 'big', signed=False)
         chksm = buf[4:20]
@@ -41,3 +42,11 @@ class Packet:
         data = buf[21:21 + length]
         assert chksm == md5(data).hexdigest().encode('utf-8')
         return Packet(seq_no, ack, nak, data)
+
+    @staticmethod
+    def finisher(seq_no: int):
+        return Packet(seq_no, True, True, FINISHER_DATA)
+
+    @staticmethod
+    def acknowledgment(seq_no: int):
+        return Packet(seq_no, True, False, b"")

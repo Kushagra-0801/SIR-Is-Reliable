@@ -5,7 +5,7 @@ import time
 from threading import Thread, Timer
 from typing import Dict, List, Tuple
 
-from . import packet
+import packet
 
 
 def grouper(iterable, n, fillvalue=None):
@@ -13,7 +13,7 @@ def grouper(iterable, n, fillvalue=None):
     # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"
     from itertools import zip_longest
     args = [iter(iterable)] * n
-    return zip_longest(*args, fillvalue=fillvalue)
+    return (d for d in zip_longest(*args, fillvalue=fillvalue))
 
 
 class SirSocket:
@@ -28,7 +28,6 @@ class SirSocket:
         self.recv_buf: Dict[int, bytes] = {}
         self.acked_pkts = set()
         self.timers = {}
-        self.send_base = 0
         self.recv_base = 0
         self.send_seqnum = 0
         self.is_running = True
@@ -85,7 +84,6 @@ class SirSocket:
         if packet.ack:  # packet is an ACK
             self.timers[packet.seq_no].cancel()
             del self.timers[packet.seq_no]
-            logging.debug(f"Removed {self.send_base=} from send buffer.")
         elif packet.nak:
             if packet.seq_no in self.timers:
                 self.timers[packet.seq_no].cancel()
