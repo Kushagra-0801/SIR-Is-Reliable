@@ -11,5 +11,6 @@
     },
     "C_Cpp.default.includePath": [
         "includes/*"
-    ]
+    ],
+    "python.formatting.provider": "yapf"
 }
