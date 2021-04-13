@@ -16,12 +16,16 @@ parser.add_argument("client_file_path",
                     help="Path where the file should be copied to")
 args = parser.parse_args()
 
-socket = sirsocket.SirSocket()
-socket.connect((args.server, args.port))
-socket.next_seq = (start_no := randrange(0, SEQ_LIM))
+print(f'Args: {args}')
+
+start_no = randrange(0, SEQ_LIM // 2)
+socket = sirsocket.SirSocket((args.server, args.port), start_no)
+
+print('Created socket')
 
 if len(path := args.server_file_path) > DATA_SIZE:
-    parts = sirsocket.grouper(path, DATA_SIZE - len(CONTINUATION_PREFIX))
+    parts = sirsocket.grouper(path.encode(),
+                              DATA_SIZE - len(CONTINUATION_PREFIX))
     prev = next(parts)
     data = b""
     for p in parts:
@@ -31,22 +35,30 @@ if len(path := args.server_file_path) > DATA_SIZE:
     data += prev
 else:
     data = path.encode()
+print('Sending data:', data)
 socket.write(data)
 
 while not (file_size := socket.read()):
     pass
 
+print('Got replies')
+print(file_size)
+exit(0)
+file_data = file_size[1:]
 file_size = file_size[0][1]
+
 file_size = int.from_bytes(file_size[:8], 'big', signed=True)
 
 if file_size < 0:
     raise Exception("File does not exist on the server")
 
 with open(args.client_file_path, "w+b") as f:
+    print(file_size)
+    # exit(0)
     f.write(b"\0" * file_size)
     f.seek(0)
     while True:
-        pkts = socket.read()
+        pkts = file_data
         # ASSUME: data is always max in packet except maybe last packet
         for (seq_no, data) in pkts:
             rel_seq = (seq_no - start_no) % SEQ_LIM

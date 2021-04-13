@@ -9,33 +9,16 @@ SEQ_LIM = 2**32
 FINISHER_DATA = b"TEKCAP TSAL"
 
 
-def grouper(iterable, n, fillvalue=None):
-    "Collect data into fixed-length chunks or blocks"
-    # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"
-    from itertools import zip_longest
-    args = [iter(iterable)] * n
-    return (''.join(chr(i) for i in d if i is not None).encode()
-            for d in zip_longest(*args, fillvalue=fillvalue))
-
-
 def hexdigest_to_bytes(digest: str) -> bytes:
     r = b""
-    for a in grouper(digest.encode(), 2):
-        b = 0
-        if a[0] >= ord('0') and a[0] <= ord('9'):
-            b = a[0] - ord('0')
-        elif a[0] >= ord('a') and a[0] <= ord('f'):
-            b = a[0] - ord('a')
-        elif a[0] >= ord('A') and a[0] <= ord('F'):
-            b = a[0] - ord('A')
-        b <<= 4
-        if a[1] >= ord('0') and a[1] <= ord('9'):
-            b |= a[0] - ord('0')
-        elif a[1] >= ord('a') and a[1] <= ord('f'):
-            b |= a[1] - ord('a')
-        elif a[1] >= ord('A') and a[1] <= ord('F'):
-            b |= a[1] - ord('A')
-        r += chr(b).encode()
+    assert len(digest) % 2 == 0
+    for i in range(len(digest) // 2):
+        a = digest[2 * i]
+        b = digest[2 * i + 1]
+        a = int(a, 16)
+        b = int(b, 16)
+        c = (a << 4) | b
+        r += c.to_bytes(1, 'big', signed=False)
     return r
 
 
@@ -49,6 +32,7 @@ class Packet:
     def into_buf(self) -> bytes:
         buf = b""
         buf += self.seq_no.to_bytes(4, 'big', signed=False)
+        # print(self.data)
         chksm = md5(self.data).hexdigest()
         buf += hexdigest_to_bytes(chksm)
         anl = 0

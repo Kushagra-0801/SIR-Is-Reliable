@@ -16,8 +16,8 @@ class SirServer:
         self.serv_sock.bind((address, port))
         self.clients: Dict[Any, Callable[[Union[Packet, None], int],
                                          List[Packet]]] = {}
-        self.send_buf = {}
-        self.timers = {}
+        self.send_buf = DefaultDict(dict)
+        self.timers = DefaultDict(dict)
 
     def register_factory(self,
                          factory: Callable[[],
@@ -42,6 +42,7 @@ class SirServer:
                 packet, addr = self.serv_sock.recvfrom(MAX_PACKET_SIZE,
                                                        socket.MSG_DONTWAIT)
                 packet = Packet.from_buf(packet)
+                print(packet)
                 packets = []
                 if packet.ack:
                     self.timers[addr][packet.seq_no].cancel()
@@ -55,9 +56,11 @@ class SirServer:
                     packet, self.IN_FLIGHT_BUFFER - len(self.send_buf[addr])))
                 for pack in packets:
                     self.serv_sock.sendto(pack.into_buf(), addr)
-                    self._start_timer(pack.seq_no, addr)
-                    self.send_buf[addr][pack.seq_no] = pack
+                    if not pack.ack and not pack.nak:
+                        self._start_timer(pack.seq_no, addr)
+                        self.send_buf[addr][pack.seq_no] = pack
             except BlockingIOError:
+                # print('In Except')
                 for addr, cl in self.clients.items():
                     packets = cl(
                         None, self.IN_FLIGHT_BUFFER - len(self.send_buf[addr]))
