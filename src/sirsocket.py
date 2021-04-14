@@ -34,8 +34,8 @@ class SirSocket:
         self.acked_pkts = set()
         self.timers = {}
         self.next_seq = start_seq
-        print(self._sock.getpeername())
-        print(self._sock.getblocking())
+        # print(self._sock.getpeername())
+        # print(self._sock.getblocking())
 
     def _start_timer(self, seq_num):
         timer = Timer(self.TIMEOUT, self._handle_timeout, (seq_num, ))
@@ -43,7 +43,7 @@ class SirSocket:
         self.timers[seq_num] = timer
 
     def _handle_timeout(self, seq_num):
-        print(f"Timed out for {seq_num=}")
+        # print(f"Timed out for {seq_num=}")
         try:
             self._sock.send(self.send_buf[seq_num])
         except KeyError:
@@ -56,26 +56,26 @@ class SirSocket:
 
     def _recv(self):
         while True:
-            print("reading...")
+            # print("reading...")
             try:
                 pack = self._sock.recv(MAX_PACKET_SIZE, socket.MSG_DONTWAIT)
                 self._handle_pkt(pack)
-                print("read 1 pack")
+                # print("read 1 pack")
             except BlockingIOError:
-                print("Breaking...")
+                # print("Breaking...")
                 break
             except (ConnectionRefusedError, ConnectionAbortedError, OSError):
                 print("Connection closed.")
                 self.send_buf.clear()
 
     def _send_ack(self, seq_num):
-        print(f"Sending ack for {seq_num=}")
+        # print(f"Sending ack for {seq_num=}")
         self._sock.send(packet.Packet(seq_num, True, False, b"").into_buf())
 
     def _handle_pkt(self, pkt):
         try:
             packet = Packet.from_buf(pkt)
-            print(f"Received: seq_no = {packet.seq_no} data = {packet.data}")
+            # print(f"Received: seq_no = {packet.seq_no} data = {packet.data}")
         except AssertionError:
             print("Corrupted packet received")
             return
@@ -84,7 +84,7 @@ class SirSocket:
                 self.timers[packet.seq_no].cancel()
                 del self.timers[packet.seq_no]
             except KeyError:
-                print("Got result")
+                # print("Got result")
                 if packet.data == FINISHER_DATA:
                     for i in self.timers:
                         i.cancel()
@@ -101,7 +101,7 @@ class SirSocket:
         elif len(self.recv_buf) < self.BUFFER_SIZE:
             self._send_ack(packet.seq_no)
             self.recv_buf[packet.seq_no] = packet.data
-            print(f"Received new packet with {packet.seq_no=}.")
+            # print(f"Received new packet with {packet.seq_no=}.")
         else:
             print(f"Buffer Full: {packet.seq_no=}")
 
@@ -112,8 +112,9 @@ class SirSocket:
         If no data is available, it returns an empty string.
         """
         self._recv()
-        items = self.recv_buf.items()
+        items = [*self.recv_buf.items()]
         self.recv_buf.clear()
+        # print(items)
         return sorted(items)
 
     def write(self, data):
@@ -122,14 +123,14 @@ class SirSocket:
         The data should be less than 65481 bytes long.
         """
         left_space = packet.DATA_SIZE * (self.BUFFER_SIZE - len(self.send_buf))
-        print("in write", data)
+        # print("in write", data)
         if left_space < len(data):
-            print("in write1")
+            # print("in write1")
             raise ValueError(("Too much data.", left_space))
         for data in grouper(data, packet.DATA_SIZE):
-            print("in write2")
+            # print("in write2")
             pkt = packet.Packet(self.next_seq, False, False, data).into_buf()
-            print('Sending packet: ', pkt)
+            # print('Sending packet: ', pkt)
             self.send_buf[self.next_seq] = pkt
             self._sock.sendall(pkt)
             self._start_timer(self.next_seq)

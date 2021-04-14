@@ -42,7 +42,7 @@ class SirServer:
                 packet, addr = self.serv_sock.recvfrom(MAX_PACKET_SIZE,
                                                        socket.MSG_DONTWAIT)
                 packet = Packet.from_buf(packet)
-                print(packet)
+                # print(packet)
                 packets = []
                 if packet.ack:
                     self.timers[addr][packet.seq_no].cancel()
