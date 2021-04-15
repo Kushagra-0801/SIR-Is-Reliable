@@ -57,8 +57,9 @@ class Handler:
         if len(self.ack_count) == self.total_packets:
             packets.append(Packet.finisher(self.seq_no))
             self.ack_count.add(SEQ_LIM)
-            self.f.close()
-            self.f = None
+            if self.f:
+                self.f.close()
+                self.f = None
         if self.f:
             to_send_now = self.f.read(DATA_SIZE * rem_buf)
             for data in grouper(to_send_now, DATA_SIZE):
