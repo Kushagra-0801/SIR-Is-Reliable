@@ -89,9 +89,12 @@ class SirSocket:
                     for i in self.timers:
                         i.cancel()
                     return
-                self.timers[(packet.seq_no - 1) % SEQ_LIM].cancel()
-                del self.timers[(packet.seq_no - 1) % SEQ_LIM]
-                self.recv_buf[packet.seq_no] = packet.data
+                try:
+                    self.timers[(packet.seq_no - 1) % SEQ_LIM].cancel()
+                    del self.timers[(packet.seq_no - 1) % SEQ_LIM]
+                    self.recv_buf[packet.seq_no] = packet.data
+                except KeyError:
+                    print('Warn')
         elif packet.nak:
             if packet.seq_no in self.timers:
                 self.timers[packet.seq_no].cancel()
@@ -127,11 +130,21 @@ class SirSocket:
         if left_space < len(data):
             # print("in write1")
             raise ValueError(("Too much data.", left_space))
+        prev = None
         for data in grouper(data, packet.DATA_SIZE):
-            # print("in write2")
-            pkt = packet.Packet(self.next_seq, False, False, data).into_buf()
-            # print('Sending packet: ', pkt)
-            self.send_buf[self.next_seq] = pkt
-            self._sock.sendall(pkt)
-            self._start_timer(self.next_seq)
-            self.next_seq = (self.next_seq + 1) % (packet.SEQ_LIM)
+            if prev:
+                # print("in write2")
+                pkt = packet.Packet(self.next_seq, False, False,
+                                    prev).into_buf()
+                # print('Sending packet: ', pkt)
+                self.send_buf[self.next_seq] = pkt
+                self._sock.sendall(pkt)
+                self._start_timer(self.next_seq)
+                self.next_seq = (self.next_seq + 1) % (packet.SEQ_LIM)
+            prev = data
+        pkt = packet.Packet(self.next_seq, True, True, prev).into_buf()
+        # print('Sending packet: ', pkt)
+        self.send_buf[self.next_seq] = pkt
+        self._sock.sendall(pkt)
+        self._start_timer(self.next_seq)
+        self.next_seq = (self.next_seq + 1) % (packet.SEQ_LIM)

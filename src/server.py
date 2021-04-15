@@ -1,5 +1,5 @@
 from typing import Dict, List, Union
-from packet import DATA_SIZE, CONTINUATION_PREFIX, Packet, SEQ_LIM
+from packet import DATA_SIZE, CONTINUATION_PREFIX, FINISHER_DATA, Packet, SEQ_LIM
 import sirserver
 from os.path import getsize
 
@@ -25,14 +25,19 @@ class Handler:
                  rem_buf: int) -> List[Packet]:
         packets = []
         if packet:
-            if packet.ack:
+            flag = False
+            if packet.ack and packet.nak:
+                flag = True
+            if packet.ack and not flag:
                 self.ack_count.add(packet.seq_no)
-            elif packet.nak:
+            elif packet.nak and not flag:
                 pass
             else:
                 if packet.data[:2] == CONTINUATION_PREFIX:
                     packets = [Packet.acknowledgment(packet.seq_no)]
                     self.file_name += packet.data[2:]
+                elif packet.data == FINISHER_DATA:
+                    pass
                 else:
                     self.file_name += packet.data
                     self.seq_no = packet.seq_no
@@ -40,6 +45,7 @@ class Handler:
                     try:
                         self.f = open(self.file_name, "rb")
                         s = getsize(self.file_name)
+                        print(s)
                         self.total_packets = (s + DATA_SIZE - 1) // DATA_SIZE
                         data = s.to_bytes(8, 'big', signed=True)
                     except FileNotFoundError:

@@ -44,11 +44,14 @@ class SirServer:
                 packet = Packet.from_buf(packet)
                 # print(packet)
                 packets = []
-                if packet.ack:
+                flag = False
+                if packet.ack and packet.nak:
+                    flag = True
+                if packet.ack and not flag:
                     self.timers[addr][packet.seq_no].cancel()
                     del self.timers[addr][packet.seq_no]
                     del self.send_buf[addr][packet.seq_no]
-                elif packet.nak:
+                elif packet.nak and not flag:
                     if packet.seq_no in self.timers[addr]:
                         self.timers[addr][packet.seq_no].cancel()
                     packets = [self.send_buf[addr][packet.seq_no]]

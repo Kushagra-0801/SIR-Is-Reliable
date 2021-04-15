@@ -1,4 +1,4 @@
-from packet import DATA_SIZE, CONTINUATION_PREFIX, SEQ_LIM
+from packet import DATA_SIZE, CONTINUATION_PREFIX, FINISHER_DATA, SEQ_LIM
 import sirsocket
 
 from random import randrange
@@ -56,8 +56,9 @@ if file_size < 0:
     raise Exception("File does not exist on the server")
 
 with open(args.client_file_path, "w+b") as f:
-    # print(file_size)
-    f.write(b"\0" * file_size)
+    print(file_size)
+    for _ in range(file_size):
+        f.write(b"\0")
     f.seek(0)
     pkts = file_data
     while num_packs:
